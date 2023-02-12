@@ -28,13 +28,13 @@ class Agent:
 
     def save_models(self):
         print('... saving models ...')
-        self.actor.save(self.chkpt_dir + 'actor.h5')
-        self.critic.save(self.chkpt_dir + 'critic.h5')
+        self.actor.save(self.chkpt_dir + 'actor', save_format="tf")
+        self.critic.save(self.chkpt_dir + 'critic', save_format="tf")
 
     def load_models(self):
         print('... loading models ...')
-        self.actor = keras.models.load_model(self.chkpt_dir + 'actor.h5')
-        self.critic = keras.models.load_model(self.chkpt_dir + 'critic.h5')
+        self.actor = keras.models.load_model(self.chkpt_dir + 'actor', save_format="tf")
+        self.critic = keras.models.load_model(self.chkpt_dir + 'critic', save_format="tf")
 
     def choose_action(self, observation):
         state = tf.convert_to_tensor([observation])
