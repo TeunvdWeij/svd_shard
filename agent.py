@@ -1,7 +1,9 @@
 import numpy as np
 import tensorflow as tf
 import tensorflow as keras
-from keras.optimizers import Adam
+# from keras.optimizers import Adam
+# from tensorflow.keras.optimizers import Adam
+
 import tensorflow_probability as tfp
 from memory import PPOMemory
 # from networks import ActorNetwork, CriticNetwork
@@ -20,10 +22,12 @@ class Agent:
         self.chkpt_dir = chkpt_dir
 
         self.actor = ActorModel(input_space, n_actions, depths)
-        self.actor.compile(optimizer=Adam(learning_rate=1e-3))
+        # self.actor.compile(optimizer=Adam(learning_rate=1e-3))
+        self.actor.compile(optimizer='adam')
 
         self.critic = CriticModel(input_space, depths)
-        self.critic.compile(optimizer=Adam(learning_rate=1e-3))
+        # self.critic.compile(optimizer=Adam(learning_rate=1e-3))
+        self.critic.compile(optimizer='adam')
 
         # self.actor = actor_model(input_space, n_actions, depths)
         # self.actor.compile(optimizer=Adam(learning_rate=alpha))
