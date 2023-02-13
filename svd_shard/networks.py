@@ -1,6 +1,6 @@
-from tensorflow import keras
-from keras.models import Sequential
-from keras.layers import Input, Dense, Conv2D, ReLU, MaxPooling2D, Flatten
+# from tensorflow import keras
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Input, Dense, Conv2D, ReLU, MaxPooling2D, Flatten
 
 
 
