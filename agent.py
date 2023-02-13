@@ -116,6 +116,7 @@ class Agent:
                 actor_grads = tape.gradient(actor_loss, actor_params)
                 critic_params = self.critic.trainable_variables
                 critic_grads = tape.gradient(critic_loss, critic_params)
+                print(f"\n\nActor grads: {actor_grads}, Actor params: {actor_params}")
                 self.actor.optimizer.apply_gradients(
                         zip(actor_grads, actor_params))
                 self.critic.optimizer.apply_gradients(

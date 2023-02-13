@@ -38,7 +38,8 @@ if __name__ == '__main__':
     n_steps = 0
 
     for i in range(n_games):
-        observation = env.reset()['rgb'][0] # to change shape (1, 64, 64, 3) -> (64, 64, 3)
+        # to change shape (1, 64, 64, 3) -> (64, 64, 3) #TODO should probs change to tf.squeeze
+        observation = env.reset()['rgb'][0] 
         # print(type(observation))
         # print(len(observation))
         # print(observation)
@@ -49,7 +50,9 @@ if __name__ == '__main__':
              #NOTE: first _ i think captures truncated? But do not know
             print("äction", action)
             print(type(action), action.shape)
-            observation_, reward, done, _, _ = env.step(action)
+            #NOTE: info not used
+            observation_, reward, done, info= env.step(action)
+            observation_ = observation_['rgb'][0] 
             # result = env.step(action)
             # print(f"\n\n Env step: {result}")
             # print(len(result))
