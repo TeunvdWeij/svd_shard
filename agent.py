@@ -5,24 +5,30 @@ from keras.optimizers import Adam
 import tensorflow_probability as tfp
 from memory import PPOMemory
 # from networks import ActorNetwork, CriticNetwork
-from networks import actor_model, critic_model
-
+# from networks import actor_model, critic_model
+from networks import ActorModel, CriticModel
 
 class Agent:
     def __init__(self, n_actions, input_space, depths=[16, 32, 32], gamma=0.99, alpha=0.0003,
                  gae_lambda=0.95, policy_clip=0.2, batch_size=64,
                  n_epochs=10, chkpt_dir='models/'):
+
         self.gamma = gamma
         self.policy_clip = policy_clip
         self.n_epochs = n_epochs
         self.gae_lambda = gae_lambda
         self.chkpt_dir = chkpt_dir
 
-        # self.actor = ActorNetwork(n_actions)
-        self.actor = actor_model(input_space, n_actions, depths)
-        self.actor.compile(optimizer=Adam(learning_rate=alpha))
-        self.critic = critic_model(input_space, depths)
-        self.critic.compile(optimizer=Adam(learning_rate=alpha))
+        self.actor = ActorModel(input_space, n_actions, depths)
+        self.actor.compile(optimizer=Adam(learning_rate=1e-3))
+
+        self.critic = CriticModel(input_space, depths)
+        self.critic.compile(optimizer=Adam(learning_rate=1e-3))
+
+        # self.actor = actor_model(input_space, n_actions, depths)
+        # self.actor.compile(optimizer=Adam(learning_rate=alpha))
+        # self.critic = critic_model(input_space, depths)
+        # self.critic.compile(optimizer=Adam(learning_rate=alpha))
         self.memory = PPOMemory(batch_size)
 
     def store_transition(self, state, action, probs, vals, reward, done):
@@ -44,14 +50,14 @@ class Agent:
         # print(state.shape)
         # print(state)
 
-        # probs = self.actor(state)
-        probs = self.actor.predict(state)
+        probs = self.actor(state)
+        # probs = self.actor.predict(state)
         # print(probs.shape)
         dist = tfp.distributions.Categorical(probs)
         action = dist.sample()
         log_prob = dist.log_prob(action)
-        # value = self.critic(state)
-        value = self.critic.predict(state)
+        value = self.critic(state)
+        # value = self.critic.predict(state)
         # print(value)
         # print(f"action: {type(action)} value: {type(value), value.shape} log_prob: {type(log_prob)}")
 
@@ -88,13 +94,13 @@ class Agent:
                     old_probs = tf.convert_to_tensor(old_prob_arr[batch])
                     actions = tf.convert_to_tensor(action_arr[batch])
 
-                    # probs = self.actor(states)
-                    probs = self.actor.predict(states)
+                    probs = self.actor(states)
+                    # probs = self.actor.predict(states)
                     dist = tfp.distributions.Categorical(probs)
                     new_probs = dist.log_prob(actions)
 
-                    # critic_value = self.critic(states)
-                    critic_value = self.critic.predict(states)
+                    critic_value = self.critic(states)
+                    # critic_value = self.critic.predict(states)
 
                     critic_value = tf.squeeze(critic_value, 1)
 
@@ -116,7 +122,6 @@ class Agent:
                 actor_grads = tape.gradient(actor_loss, actor_params)
                 critic_params = self.critic.trainable_variables
                 critic_grads = tape.gradient(critic_loss, critic_params)
-                print(f"\n\nActor grads: {actor_grads}, Actor params: {actor_params}")
                 self.actor.optimizer.apply_gradients(
                         zip(actor_grads, actor_params))
                 self.critic.optimizer.apply_gradients(

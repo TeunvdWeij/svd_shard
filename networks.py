@@ -3,49 +3,116 @@ from keras.models import Sequential
 from keras.layers import Input, Dense, Conv2D, ReLU, MaxPooling2D, Flatten
 
 
-def actor_model(input_space, output_space, depths):
-    """
-    Model used in the paper "IMPALA: Scalable Distributed Deep-RL with 
-    Importance Weighted Actor-Learner Architectures" https://arxiv.org/abs/1802.01561
-    """
-    def conv_sequence(model, idx, depth):
-        model.add(Conv2D(filters=depth, kernel_size=3, padding='same', name=f"conv_{idx}"))
-        model.add(MaxPooling2D(pool_size=3, strides=2, padding='same', name=f"pool_{idx}"))
+
+class ActorModel(Sequential):
+    def __init__(self, input_space, output_space, depths):
+        super().__init__()
+
+        self.model = self.actor_model(input_space, output_space, depths)
+
+    def actor_model(self, input_space, output_space, depths):
+        """
+        Model used in the paper "IMPALA: Scalable Distributed Deep-RL with 
+        Importance Weighted Actor-Learner Architectures" https://arxiv.org/abs/1802.01561
+        """
+        def conv_sequence(model, idx, depth):
+            model.add(Conv2D(filters=depth, kernel_size=3, padding='same', name=f"conv_{idx}"))
+            model.add(MaxPooling2D(pool_size=3, strides=2, padding='same', name=f"pool_{idx}"))
+            return model
+            
+        model = Sequential()
+        model.add(Input(shape=input_space, name="input_layer"))
+
+        for idx, depth in enumerate(depths):
+            model = conv_sequence(model, idx, depth)
+
+        model.add(Flatten(name="flatten"))
+        model.add(ReLU(name="ReLU"))
+        model.add(Dense(output_space, activation="relu", name="dense_output"))
+
         return model
-        
-    model = Sequential()
-    model.add(Input(shape=input_space, name="input_layer"))
 
-    for idx, depth in enumerate(depths):
-        model = conv_sequence(model, idx, depth)
+    def call(self, state):
+        return self.model(state)
 
-    model.add(Flatten(name="flatten"))
-    model.add(ReLU(name="ReLU"))
-    model.add(Dense(output_space, activation="relu", name="dense_output"))
 
-    return model
+class CriticModel(Sequential):
+    def __init__(self, input_space, depths):
+        super().__init__()
 
-def critic_model(input_space, depths):
-    """
-    Model used in the paper "IMPALA: Scalable Distributed Deep-RL with 
-    Importance Weighted Actor-Learner Architectures" https://arxiv.org/abs/1802.01561
-    """
-    def conv_sequence(model, idx, depth):
-        model.add(Conv2D(filters=depth, kernel_size=3, padding='same', name=f"conv_{idx}"))
-        model.add(MaxPooling2D(pool_size=3, strides=2, padding='same', name=f"pool_{idx}"))
+        self.model = self.critic_model(input_space, depths)
+
+    def critic_model(self, input_space, depths):
+        """
+        Model used in the paper "IMPALA: Scalable Distributed Deep-RL with 
+        Importance Weighted Actor-Learner Architectures" https://arxiv.org/abs/1802.01561
+        """
+        def conv_sequence(model, idx, depth):
+            model.add(Conv2D(filters=depth, kernel_size=3, padding='same', name=f"conv_{idx}"))
+            model.add(MaxPooling2D(pool_size=3, strides=2, padding='same', name=f"pool_{idx}"))
+            return model
+            
+        model = Sequential()
+        model.add(Input(shape=input_space))
+
+        for idx, depth in enumerate(depths):
+            model = conv_sequence(model, idx, depth)
+
+        model.add(Flatten(name="flatten"))
+        model.add(ReLU(name="ReLU"))
+        model.add(Dense(1, activation="relu", name="dense_output"))
+
         return model
+
+    def call(self, state):
+        return self.model(state)
+
+
+# def actor_model(input_space, output_space, depths):
+#     """
+#     Model used in the paper "IMPALA: Scalable Distributed Deep-RL with 
+#     Importance Weighted Actor-Learner Architectures" https://arxiv.org/abs/1802.01561
+#     """
+#     def conv_sequence(model, idx, depth):
+#         model.add(Conv2D(filters=depth, kernel_size=3, padding='same', name=f"conv_{idx}"))
+#         model.add(MaxPooling2D(pool_size=3, strides=2, padding='same', name=f"pool_{idx}"))
+#         return model
         
-    model = Sequential()
-    model.add(Input(shape=input_space))
+#     model = Sequential()
+#     model.add(Input(shape=input_space, name="input_layer"))
 
-    for idx, depth in enumerate(depths):
-        model = conv_sequence(model, idx, depth)
+#     for idx, depth in enumerate(depths):
+#         model = conv_sequence(model, idx, depth)
 
-    model.add(Flatten(name="flatten"))
-    model.add(ReLU(name="ReLU"))
-    model.add(Dense(1, activation="relu", name="dense_output"))
+#     model.add(Flatten(name="flatten"))
+#     model.add(ReLU(name="ReLU"))
+#     model.add(Dense(output_space, activation="relu", name="dense_output"))
 
-    return model
+#     return model
+
+# def critic_model(input_space, depths):
+#     """
+#     Model used in the paper "IMPALA: Scalable Distributed Deep-RL with 
+#     Importance Weighted Actor-Learner Architectures" https://arxiv.org/abs/1802.01561
+#     """
+#     def conv_sequence(model, idx, depth):
+#         model.add(Conv2D(filters=depth, kernel_size=3, padding='same', name=f"conv_{idx}"))
+#         model.add(MaxPooling2D(pool_size=3, strides=2, padding='same', name=f"pool_{idx}"))
+#         return model
+        
+#     model = Sequential()
+#     model.add(Input(shape=input_space))
+
+#     for idx, depth in enumerate(depths):
+#         model = conv_sequence(model, idx, depth)
+
+#     model.add(Flatten(name="flatten"))
+#     model.add(ReLU(name="ReLU"))
+#     model.add(Dense(1, activation="relu", name="dense_output"))
+
+#     return model
+
+
 
 
 # class ActorNetwork(keras.Model):
@@ -63,22 +130,22 @@ def critic_model(input_space, depths):
 
 #         return x
 
-# # class ActorModel(Sequential):
-# #     """
-# #     Modified model, but original used in the paper "IMPALA: Scalable Distributed Deep-RL with 
-# #     Importance Weighted Actor-Learner Architectures" https://arxiv.org/abs/1802.01561
+# class ActorModel(Sequential):
+#     """
+#     Modified model, but original used in the paper "IMPALA: Scalable Distributed Deep-RL with 
+#     Importance Weighted Actor-Learner Architectures" https://arxiv.org/abs/1802.01561
 
-# #     """
-# #     def __init__(self, input_space, output_space, depths):
-# #         super(ActorModel, self).__init__()
+#     """
+#     def __init__(self, input_space, output_space, depths):
+#         super(ActorModel, self).__init__()
 
 
-# #     def conv_sequence(model, idx, depth):
-# #         model.add(Conv2D(filters=depth, kernel_size=3, padding='same', name=f"conv_{idx}"))
-# #         model.add(MaxPooling2D(pool_size=3, strides=2, padding='same', name=f"pool_{idx}"))
-# #         return model
+#     def conv_sequence(model, idx, depth):
+#         model.add(Conv2D(filters=depth, kernel_size=3, padding='same', name=f"conv_{idx}"))
+#         model.add(MaxPooling2D(pool_size=3, strides=2, padding='same', name=f"pool_{idx}"))
+#         return model
         
-# #     model.add(Input(shape=input_space))
+#     model.add(Input(shape=input_space))
 
 # #     for idx, depth in enumerate(depths):
 # #         model = conv_sequence(model, idx, depth)

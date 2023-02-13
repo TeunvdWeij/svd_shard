@@ -22,12 +22,12 @@ if __name__ == '__main__':
                   alpha=alpha, n_epochs=n_epochs,
                   input_space=input_space)
 
-    agent.actor.summary()
+    # agent.actor.summary() #cannot do this because model is callable and not compiled
 
     n_games = 20
 
     # figure_file = 'plots/cartpole.png'
-    figure_file = 'plots/coinrun.png'
+    figure_file = 'plots/coinrun_v0.0.png'
 
 
     best_score = 0
@@ -48,8 +48,8 @@ if __name__ == '__main__':
         while not done:
             action, prob, val = agent.choose_action(observation)
              #NOTE: first _ i think captures truncated? But do not know
-            print("äction", action)
-            print(type(action), action.shape)
+            # print("äction", action)
+            # print(type(action), action.shape)
             #NOTE: info not used
             observation_, reward, done, info= env.step(action)
             observation_ = observation_['rgb'][0] 
