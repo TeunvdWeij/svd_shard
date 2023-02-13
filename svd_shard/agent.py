@@ -1,5 +1,7 @@
 import numpy as np
 import tensorflow as tf
+tf.random.set_seed(42)
+
 import tensorflow as keras
 # from keras.optimizers import Adam
 # from tensorflow.keras.optimizers import Adam
@@ -47,8 +49,8 @@ class Agent:
 
     def save_models(self):
         print('... saving models ...')
-        self.actor.save(self.chkpt_dir + 'actor', save_format="h5")
-        self.critic.save(self.chkpt_dir + 'critic', save_format="h5")
+        self.actor.save(self.chkpt_dir + 'actor.h5')
+        self.critic.save(self.chkpt_dir + 'critic.h5')
 
     def load_models(self):
         print('... loading models ...')

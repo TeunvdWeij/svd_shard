@@ -1,4 +1,5 @@
 # from tensorflow import keras
+import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Input, Dense, Conv2D, ReLU, MaxPooling2D, Flatten
 
@@ -29,11 +30,13 @@ class ActorModel(Sequential):
         model.add(Flatten(name="flatten"))
         model.add(ReLU(name="ReLU"))
         model.add(Dense(output_space, activation="relu", name="dense_output"))
+        # model.add(Dense(output_space, activation="softmax", name="dense_output"))
 
         return model
 
     def call(self, state):
-        return self.model(state)
+        scaled_state = tf.cast(state, tf.float32) / 255.
+        return self.model(scaled_state)
 
 
 class CriticModel(Sequential):
@@ -65,7 +68,8 @@ class CriticModel(Sequential):
         return model
 
     def call(self, state):
-        return self.model(state)
+        scaled_state = tf.cast(state, tf.float32) / 255.
+        return self.model(scaled_state)
 
 
 # def actor_model(input_space, output_space, depths):
