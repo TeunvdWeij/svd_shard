@@ -1,8 +1,8 @@
 import gym
 from procgen import ProcgenEnv, ProcgenGym3Env
 import numpy as np
-from agent import Agent
-from utils import plot_learning_curve
+from svd_shard.agent import Agent
+from svd_shard.utils import plot_learning_curve
 
 if __name__ == '__main__':
     # env = gym.make('CartPole-v1')

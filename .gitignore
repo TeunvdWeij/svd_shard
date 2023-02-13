@@ -1,4 +1,11 @@
 # folders
 /svd_shard_venv/
-/__pycache__/
 try_stuff.ipynb
+main.py
+
+# py cache
+/__pycache__/
+svd_shard/__pycache__/agent.cpython-310.pyc
+svd_shard/__pycache__/networks.cpython-310.pyc
+svd_shard/__pycache__/memory.cpython-310.pyc
+svd_shard/__pycache__/utils.cpython-310.pyc
