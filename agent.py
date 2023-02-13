@@ -1,14 +1,15 @@
 import numpy as np
 import tensorflow as tf
-import tensorflow.keras as keras
-from tensorflow.keras.optimizers import Adam
+import tensorflow as keras
+from keras.optimizers import Adam
 import tensorflow_probability as tfp
 from memory import PPOMemory
-from networks import ActorNetwork, CriticNetwork
+# from networks import ActorNetwork, CriticNetwork
+from networks import actor_model, critic_model
 
 
 class Agent:
-    def __init__(self, n_actions, input_dims, gamma=0.99, alpha=0.0003,
+    def __init__(self, n_actions, input_space, depths=[16, 32, 32], gamma=0.99, alpha=0.0003,
                  gae_lambda=0.95, policy_clip=0.2, batch_size=64,
                  n_epochs=10, chkpt_dir='models/'):
         self.gamma = gamma
@@ -17,9 +18,10 @@ class Agent:
         self.gae_lambda = gae_lambda
         self.chkpt_dir = chkpt_dir
 
-        self.actor = ActorNetwork(n_actions)
+        # self.actor = ActorNetwork(n_actions)
+        self.actor = actor_model(input_space, n_actions, depths)
         self.actor.compile(optimizer=Adam(learning_rate=alpha))
-        self.critic = CriticNetwork()
+        self.critic = critic_model(input_space, depths)
         self.critic.compile(optimizer=Adam(learning_rate=alpha))
         self.memory = PPOMemory(batch_size)
 
@@ -28,25 +30,36 @@ class Agent:
 
     def save_models(self):
         print('... saving models ...')
-        self.actor.save(self.chkpt_dir + 'actor', save_format="tf")
-        self.critic.save(self.chkpt_dir + 'critic', save_format="tf")
+        self.actor.save(self.chkpt_dir + 'actor', save_format="h5")
+        self.critic.save(self.chkpt_dir + 'critic', save_format="h5")
 
     def load_models(self):
         print('... loading models ...')
-        self.actor = keras.models.load_model(self.chkpt_dir + 'actor', save_format="tf")
-        self.critic = keras.models.load_model(self.chkpt_dir + 'critic', save_format="tf")
+        self.actor = keras.models.load_model(self.chkpt_dir + 'actor', save_format="h5")
+        self.critic = keras.models.load_model(self.chkpt_dir + 'critic', save_format="h5")
 
     def choose_action(self, observation):
         state = tf.convert_to_tensor([observation])
+        # state = tf.reshape(state, (None, 64, 64, 3))
+        # print(state.shape)
+        # print(state)
 
-        probs = self.actor(state)
+        # probs = self.actor(state)
+        probs = self.actor.predict(state)
+        # print(probs.shape)
         dist = tfp.distributions.Categorical(probs)
         action = dist.sample()
         log_prob = dist.log_prob(action)
-        value = self.critic(state)
+        # value = self.critic(state)
+        value = self.critic.predict(state)
+        # print(value)
+        # print(f"action: {type(action)} value: {type(value), value.shape} log_prob: {type(log_prob)}")
 
-        action = action.numpy()[0]
-        value = value.numpy()[0]
+
+        # action = action.numpy()[0]
+        action = action.numpy()
+        value = value[0]
+        # print("\n just before return in agent", value)
         log_prob = log_prob.numpy()[0]
 
         return action, log_prob, value
@@ -75,11 +88,13 @@ class Agent:
                     old_probs = tf.convert_to_tensor(old_prob_arr[batch])
                     actions = tf.convert_to_tensor(action_arr[batch])
 
-                    probs = self.actor(states)
+                    # probs = self.actor(states)
+                    probs = self.actor.predict(states)
                     dist = tfp.distributions.Categorical(probs)
                     new_probs = dist.log_prob(actions)
 
-                    critic_value = self.critic(states)
+                    # critic_value = self.critic(states)
+                    critic_value = self.critic.predict(states)
 
                     critic_value = tf.squeeze(critic_value, 1)
 

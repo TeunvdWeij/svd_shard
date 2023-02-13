@@ -1,22 +1,36 @@
 import gym
+from procgen import ProcgenEnv, ProcgenGym3Env
 import numpy as np
 from agent import Agent
 from utils import plot_learning_curve
 
 if __name__ == '__main__':
-    env = gym.make('CartPole-v1')
+    # env = gym.make('CartPole-v1')
+
+    # create env to get features from, like action space
+    env = ProcgenEnv(num_envs=1, env_name="coinrun") 
+    # envs = ProcgenGym3Env(num=1, env_name="coinrun")
+    # env = gym.make()
+
     N = 20
     batch_size = 5
     n_epochs = 4
     alpha = 0.0003
+    input_space = env.observation_space['rgb'].shape
+
     agent = Agent(n_actions=env.action_space.n, batch_size=batch_size,
                   alpha=alpha, n_epochs=n_epochs,
-                  input_dims=env.observation_space.shape)
-    n_games = 300
+                  input_space=input_space)
 
-    figure_file = 'plots/cartpole.png'
+    agent.actor.summary()
 
-    best_score = env.reward_range[0]
+    n_games = 20
+
+    # figure_file = 'plots/cartpole.png'
+    figure_file = 'plots/coinrun.png'
+
+
+    best_score = 0
     score_history = []
 
     learn_iters = 0
@@ -24,12 +38,17 @@ if __name__ == '__main__':
     n_steps = 0
 
     for i in range(n_games):
-        observation, _= env.reset() 
+        observation = env.reset()['rgb'][0] # to change shape (1, 64, 64, 3) -> (64, 64, 3)
+        # print(type(observation))
+        # print(len(observation))
+        # print(observation)
         done = False
         score = 0
         while not done:
             action, prob, val = agent.choose_action(observation)
              #NOTE: first _ i think captures truncated? But do not know
+            print("äction", action)
+            print(type(action), action.shape)
             observation_, reward, done, _, _ = env.step(action)
             # result = env.step(action)
             # print(f"\n\n Env step: {result}")
