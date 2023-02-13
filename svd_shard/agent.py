@@ -13,7 +13,7 @@ from svd_shard.networks import ActorModel, CriticModel
 class Agent:
     def __init__(self, n_actions, input_space, depths=[16, 32, 32], gamma=0.99, alpha=0.0003,
                  gae_lambda=0.95, policy_clip=0.2, batch_size=64,
-                 n_epochs=10, chkpt_dir='models/'):
+                 n_epochs=10, chkpt_dir='models/', tpu=False):
 
         self.gamma = gamma
         self.policy_clip = policy_clip
@@ -22,12 +22,19 @@ class Agent:
         self.chkpt_dir = chkpt_dir
 
         self.actor = ActorModel(input_space, n_actions, depths)
-        # self.actor.compile(optimizer=Adam(learning_rate=1e-3))
-        self.actor.compile(optimizer='adam')
-
         self.critic = CriticModel(input_space, depths)
+
+        # self.actor.compile(optimizer=Adam(learning_rate=1e-3))
+        if tpu:
+            self.actor.compile(optimizer='adam', steps_per_execution=32)
+            self.critic.compile(optimizer='adam', steps_per_execution=32)
+        else:
+            self.actor.compile(optimizer='adam') 
+            self.critic.compile(optimizer='adam')
+
+
         # self.critic.compile(optimizer=Adam(learning_rate=1e-3))
-        self.critic.compile(optimizer='adam')
+        # self.critic.compile(optimizer='adam')
 
         # self.actor = actor_model(input_space, n_actions, depths)
         # self.actor.compile(optimizer=Adam(learning_rate=alpha))

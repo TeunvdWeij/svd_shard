@@ -4,7 +4,7 @@ import numpy as np
 from svd_shard.agent import Agent
 from svd_shard.utils import plot_learning_curve
 
-if __name__ == '__main__':
+def main(tpu=False):
     # env = gym.make('CartPole-v1')
 
     # create env to get features from, like action space
@@ -12,7 +12,8 @@ if __name__ == '__main__':
     # envs = ProcgenGym3Env(num=1, env_name="coinrun")
     # env = gym.make()
 
-    N = 20
+    gpu = False
+    N = 20 # learn every N steps
     batch_size = 5
     n_epochs = 4
     alpha = 0.0003
@@ -20,11 +21,11 @@ if __name__ == '__main__':
 
     agent = Agent(n_actions=env.action_space.n, batch_size=batch_size,
                   alpha=alpha, n_epochs=n_epochs,
-                  input_space=input_space)
+                  input_space=input_space, tpu=tpu)
 
     # agent.actor.summary() #cannot do this because model is callable and not compiled
 
-    n_games = 20
+    n_games = 2
 
     # figure_file = 'plots/cartpole.png'
     figure_file = 'plots/coinrun_v0.0.png'
@@ -77,3 +78,7 @@ if __name__ == '__main__':
               'time_steps', n_steps, 'learning_steps', learn_iters)
     x = [i+1 for i in range(len(score_history))]
     plot_learning_curve(x, score_history, figure_file)
+
+
+if __name__ == "__main__":
+    main()
